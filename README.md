@@ -1,4 +1,4 @@
-# **TP1 - CRUD Genérico com Índice Direto Utilizando Tabela Hash Extensível**
+# **TP1 - CRUD**
 Grupo: Arthur Castro, Matheus Campbell e Pedro Gaioso
 ## **Descrição do Projeto**
 
