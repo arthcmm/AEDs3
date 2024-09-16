@@ -1,3 +1,4 @@
+package aed3;
 import java.io.*;
 import java.lang.reflect.Constructor;
 
@@ -17,8 +18,8 @@ public class Arquivo<T extends Registro & RegistroHashExtensivel<T>> {
         indice = new HashExtensivel<>(
                 ParChaveEndereco.class.getConstructor(),
                 4, // quantidade de registros por cesto
-                "diretorio.idx",
-                "cestos.idx"
+                "src/dados/diretorio.idx",
+                "src/dados/cestos.idx"
         );
 
         // Verifica se o arquivo está vazio para inicializar o último ID

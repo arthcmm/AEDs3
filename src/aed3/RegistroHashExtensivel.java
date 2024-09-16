@@ -1,3 +1,4 @@
+package aed3;
 /*
 REGISTRO HASH EXTENSÍVEL
 

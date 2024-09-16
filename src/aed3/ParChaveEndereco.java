@@ -1,3 +1,4 @@
+package aed3;
 import java.io.*;
 
 public class ParChaveEndereco implements RegistroHashExtensivel<ParChaveEndereco> {

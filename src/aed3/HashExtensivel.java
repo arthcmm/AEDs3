@@ -1,3 +1,4 @@
+package aed3;
 /*
 TABELA HASH EXTENSÍVEL
 

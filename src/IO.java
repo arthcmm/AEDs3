@@ -1,17 +1,19 @@
 import java.io.File;
 
-public class Teste {
+import aed3.Arquivo;
+
+public class IO {
     private static Arquivo<Tarefa> arqTarefas;
 
     public static void main(String[] args) {
         try {
             // Remove o arquivo anterior (apenas para testes)
-            new File("tarefas.db").delete();
-            new File("cestos.idx").delete();
-            new File("diretorio.idx").delete();
+            new File("src/dados/tarefas.db").delete();
+            new File("src/dados/cestos.idx").delete();
+            new File("src/dados/diretorio.idx").delete();
 
             // Inicializa o arquivo de tarefas
-            arqTarefas = new Arquivo<>(Tarefa.class.getConstructor(), "tarefas.db");
+            arqTarefas = new Arquivo<>(Tarefa.class.getConstructor(), "src/dados/tarefas.db");
 
             // Cria algumas tarefas
             Tarefa t1 = new Tarefa(-1, "Estudar Java", "2023-01-01", "", "Pendente", "Alta");
