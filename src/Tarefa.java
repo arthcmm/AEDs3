@@ -5,6 +5,7 @@ import aed3.RegistroHashExtensivel;
 
 public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
     private int id;
+    private int idCategoria;
     private String nome;
     private String dataCriacao;
     private String dataConclusao;
@@ -17,8 +18,9 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
     }
 
     // Construtor com parâmetros
-    public Tarefa(int id, String nome, String dataCriacao, String dataConclusao, String status, String prioridade) {
+    public Tarefa(int id, int idCategoria, String nome, String dataCriacao, String dataConclusao, String status, String prioridade) {
         this.id = id;
+        this.idCategoria = idCategoria;
         this.nome = nome;
         this.dataCriacao = dataCriacao;
         this.dataConclusao = dataConclusao;
@@ -38,6 +40,14 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
     }
 
     // Getters e Setters para os atributos
+
+    public int getIdCategoria() {
+        return idCategoria;
+    }
+
+    public void setIdCategoria(int idCategoria) {
+        this.idCategoria = idCategoria;
+    }
 
     public String getNome() {
         return nome;
@@ -86,6 +96,7 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
         DataOutputStream dos = new DataOutputStream(baos);
 
         dos.writeInt(id);
+        dos.writeInt(idCategoria);
         dos.writeUTF(nome);
         dos.writeUTF(dataCriacao);
         dos.writeUTF(dataConclusao);
@@ -102,6 +113,7 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
         DataInputStream dis = new DataInputStream(bais);
 
         id = dis.readInt();
+        idCategoria = dis.readInt();
         nome = dis.readUTF();
         dataCriacao = dis.readUTF();
         dataConclusao = dis.readUTF();
@@ -128,7 +140,7 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
 
     @Override
     public String toString() {
-        return "Tarefa [id=" + id + ", nome=" + nome + ", dataCriacao=" + dataCriacao +
+        return "Tarefa [id=" + id + ", idCategoria=" + idCategoria + ", nome=" + nome + ", dataCriacao=" + dataCriacao +
                 ", dataConclusao=" + dataConclusao + ", status=" + status +
                 ", prioridade=" + prioridade + "]";
     }

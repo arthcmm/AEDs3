@@ -16,9 +16,9 @@ public class IO {
             arqTarefas = new Arquivo<>(Tarefa.class.getConstructor(), "src/dados/tarefas.db");
 
             // Cria algumas tarefas
-            Tarefa t1 = new Tarefa(-1, "Estudar Java", "2023-01-01", "", "Pendente", "Alta");
-            Tarefa t2 = new Tarefa(-1, "Implementar CRUD", "2023-01-02", "", "Em Progresso", "Média");
-            Tarefa t3 = new Tarefa(-1, "Testar Aplicação", "2023-01-03", "", "Pendente", "Baixa");
+            Tarefa t1 = new Tarefa(-1, -1,"Estudar Java", "2023-01-01", "", "Pendente", "Alta");
+            Tarefa t2 = new Tarefa(-1, -1,"Implementar CRUD", "2023-01-02", "", "Em Progresso", "Média");
+            Tarefa t3 = new Tarefa(-1, -1,"Testar Aplicação", "2023-01-03", "", "Pendente", "Baixa");
 
             int id1 = arqTarefas.create(t1);
             t1.setID(id1);
