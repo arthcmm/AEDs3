@@ -5,14 +5,15 @@ import java.util.Collections;
 import java.util.List;
 
 public class BPlusTree<K extends Comparable<K>, V> {
-    private int grau; // O grau da árvore B+ (máximo de chaves por nó)
-    private Node root; // Raiz da árvore
+    private final int grau;
+    private Node root;
 
     public BPlusTree(int grau) {
         this.grau = grau;
         this.root = new LeafNode();
     }
 
+    // Método para inserir um valor associado a uma chave
     public void insert(K key, V value) {
         root.insert(key, value);
         if (root.isOverflow()) {
@@ -23,17 +24,24 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
     }
 
-    public List<V> get(K key) {
-        return root.get(key);
+    // Método para buscar uma lista de valores associados a uma chave
+    public V get(K key) {
+        List<V> result = root.get(key);
+        if (result != null && !result.isEmpty()) {
+            return result.getFirst();  // Retorna apenas o primeiro item da lista
+        }
+        return null; // Se não encontrar, retorna null
     }
 
+    // Método para remover um valor associado a uma chave
     public void remove(K key, V value) {
         root.remove(key, value);
         if (root instanceof InternalNode && ((InternalNode) root).children.size() == 1) {
-            root = ((InternalNode) root).children.get(0);
+            root = ((InternalNode) root).children.getFirst();
         }
     }
 
+    // Classe abstrata para representar nós da árvore
     private abstract class Node {
         List<K> keys;
 
@@ -56,7 +64,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
 
     // Classe que representa nós folha
     private class LeafNode extends Node {
-        List<V> values;
+        List<List<V>> values; // Agora cada chave está associada a uma lista de valores
         LeafNode next;
 
         LeafNode() {
@@ -68,7 +76,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
         List<V> get(K key) {
             int idx = Collections.binarySearch(keys, key);
             if (idx >= 0) {
-                return Collections.singletonList(values.get(idx));
+                return values.get(idx); // Retorna a lista de valores para a chave
             } else {
                 return new ArrayList<>(); // Retorna lista vazia se a chave não for encontrada
             }
@@ -78,11 +86,15 @@ public class BPlusTree<K extends Comparable<K>, V> {
         void insert(K key, V value) {
             int idx = Collections.binarySearch(keys, key);
             if (idx >= 0) {
-                values.add(idx, value);
+                // Chave já existe, adicionar o valor à lista de valores
+                values.get(idx).add(value);
             } else {
+                // Nova chave, inserir chave e valor
                 idx = -idx - 1;
                 keys.add(idx, key);
-                values.add(idx, value);
+                List<V> valueList = new ArrayList<>();
+                valueList.add(value);
+                values.add(idx, valueList);
             }
         }
 
@@ -90,8 +102,12 @@ public class BPlusTree<K extends Comparable<K>, V> {
         void remove(K key, V value) {
             int idx = Collections.binarySearch(keys, key);
             if (idx >= 0) {
-                keys.remove(idx);
-                values.remove(idx);
+                values.get(idx).remove(value); // Remove o valor da lista de valores
+                if (values.get(idx).isEmpty()) {
+                    // Se a lista de valores estiver vazia, remove a chave
+                    keys.remove(idx);
+                    values.remove(idx);
+                }
             }
         }
 
@@ -132,7 +148,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
 
         @Override
         K getFirstLeafKey() {
-            return keys.get(0);
+            return keys.getFirst();
         }
     }
 
@@ -201,7 +217,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
 
         @Override
         K getFirstLeafKey() {
-            return children.get(0).getFirstLeafKey();
+            return children.getFirst().getFirstLeafKey();
         }
 
         private Node getChild(K key) {
