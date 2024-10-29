@@ -23,6 +23,6 @@ public class ArquivoCategorias extends Arquivo<Categoria> {
             return false;
         }
         return super.delete(idCategoria);
-    }
+    }      
 
 }
