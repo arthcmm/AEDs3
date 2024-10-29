@@ -1,56 +1,85 @@
-import java.io.File;
-
-import aed3.Arquivo;
+import aed3.ArquivoCategorias;
+import aed3.ArquivoTarefas;
+import aed3.Categoria;
+import aed3.Tarefa;
 
 public class IO {
-    private static Arquivo<Tarefa> arqTarefas;
 
     public static void main(String[] args) {
         try {
-            // Remove o arquivo anterior (apenas para testes)
-            new File("src/dados/tarefas.db").delete();
-            new File("src/dados/cestos.idx").delete();
-            new File("src/dados/diretorio.idx").delete();
+            ArquivoTarefas arqTarefas = new ArquivoTarefas(Tarefa.class.getConstructor(), "tarefas.db");
+            ArquivoCategorias arqCategorias = new ArquivoCategorias(Categoria.class.getConstructor(), "categorias.db");
 
-            // Inicializa o arquivo de tarefas
-            arqTarefas = new Arquivo<>(Tarefa.class.getConstructor(), "src/dados/tarefas.db");
+            // Cria categorias
+            Categoria c1 = new Categoria(-1, "Trabalho");
+            Categoria c2 = new Categoria(-1, "Pessoal");
+            arqCategorias.create(c1);
+            arqCategorias.create(c2);
 
-            // Cria algumas tarefas
-            Tarefa t1 = new Tarefa(-1, -1,"Estudar Java", "2023-01-01", "", "Pendente", "Alta");
-            Tarefa t2 = new Tarefa(-1, -1,"Implementar CRUD", "2023-01-02", "", "Em Progresso", "Média");
-            Tarefa t3 = new Tarefa(-1, -1,"Testar Aplicação", "2023-01-03", "", "Pendente", "Baixa");
+            // Cria várias tarefas para a categoria Trabalho
+            Tarefa t1 = new Tarefa(-1, c1.getID(), "Estudar Java", "2023-01-01", "", "Pendente", "Alta");
+            Tarefa t2 = new Tarefa(-1, c1.getID(), "Fazer documentação", "2023-01-02", "", "Em Progresso", "Média");
+            Tarefa t3 = new Tarefa(-1, c1.getID(), "Reunião com equipe", "2023-01-03", "", "Pendente", "Alta");
 
-            int id1 = arqTarefas.create(t1);
-            t1.setID(id1);
+            // Cria uma tarefa para a categoria Pessoal
+            Tarefa t4 = new Tarefa(-1, c2.getID(), "Ir ao supermercado", "2023-01-02", "", "Pendente", "Média");
 
-            int id2 = arqTarefas.create(t2);
-            t2.setID(id2);
+            // Adiciona as tarefas
+            arqTarefas.create(t1);
+            arqTarefas.create(t2);
+            arqTarefas.create(t3);
+            arqTarefas.create(t4);
 
-            int id3 = arqTarefas.create(t3);
-            t3.setID(id3);
+            // Listar todas as tarefas da categoria Trabalho (mais de uma tarefa)
+            System.out.println("Tarefas na categoria Trabalho:");
+            arqTarefas.listarTarefasPorCategoria(c1.getID());
 
-            // Lê e exibe as tarefas
-            System.out.println(arqTarefas.read(id1));
-            System.out.println(arqTarefas.read(id2));
-            System.out.println(arqTarefas.read(id3));
+            // Listar todas as tarefas da categoria Pessoal
+            System.out.println("\nTarefas na categoria Pessoal:");
+            arqTarefas.listarTarefasPorCategoria(c2.getID());
 
-            // Atualiza uma tarefa
-            t2.setStatus("Concluída");
-            t2.setDataConclusao("2023-01-10");
-            arqTarefas.update(t2);
+            // Atualizar tarefa
+            System.out.println("\nAtualizando tarefa...");
+            t1.setStatus("Concluída");
+            t1.setDataConclusao("2023-01-10");
+            arqTarefas.update(t1);
 
-            // Exibe a tarefa atualizada
-            System.out.println(arqTarefas.read(id2));
+            // Listar tarefas após a atualização
+            System.out.println("\nTarefas na categoria Trabalho após a atualização:");
+            arqTarefas.listarTarefasPorCategoria(c1.getID());
 
-            // Exclui uma tarefa
-            arqTarefas.delete(id3);
+            // Excluir tarefa
+            System.out.println("\nExcluindo a tarefa 4 (Pessoal)...");
+            arqTarefas.delete(t4.getID());
 
-            // Verifica se a tarefa foi excluída
-            Tarefa t = arqTarefas.read(id3);
-            if (t == null) {
-                System.out.println("Tarefa excluída com sucesso.");
+            // Tentar listar tarefa excluída
+            Tarefa tarefaExcluida = arqTarefas.read(t4.getID());
+            if (tarefaExcluida == null) {
+                System.out.println("Tarefa 4 foi excluída com sucesso.");
             } else {
-                System.out.println("Falha ao excluir a tarefa.");
+                System.out.println("Falha ao excluir a tarefa 4.");
+            }
+
+            // Tentativa de exclusão de categoria com tarefas vinculadas
+            System.out.println("\nTentativa de exclusão da categoria 'Trabalho' com tarefas vinculadas...");
+            boolean exclusaoCategoria = arqCategorias.deleteCategoria(c1.getID(), arqTarefas);
+            if (!exclusaoCategoria) {
+                System.out.println("Categoria 'Trabalho' não pôde ser excluída, pois há tarefas vinculadas.");
+            }
+
+            // Excluir todas as tarefas da categoria Trabalho
+            System.out.println("\nExcluindo as tarefas da categoria 'Trabalho'...");
+            arqTarefas.delete(t1.getID());
+            arqTarefas.delete(t2.getID());
+            arqTarefas.delete(t3.getID());
+
+            // Agora, tentar excluir a categoria 'Trabalho' após remover todas as tarefas
+            System.out.println("\nTentativa de exclusão da categoria 'Trabalho' após excluir as tarefas...");
+            exclusaoCategoria = arqCategorias.deleteCategoria(c1.getID(), arqTarefas);
+            if (exclusaoCategoria) {
+                System.out.println("Categoria 'Trabalho' foi excluída com sucesso.");
+            } else {
+                System.out.println("Falha ao excluir a categoria 'Trabalho'.");
             }
 
         } catch (Exception e) {
