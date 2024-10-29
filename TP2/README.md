@@ -1,158 +1,132 @@
 # **TP2 - Relacionamento 1:N**
-Grupo: Arthur Castro, Matheus Campbell e Pedro Gaioso
+**Grupo**: Arthur Castro, Matheus Campbell e Pedro Gaioso
+
 ## **Descrição do Projeto**
 
-O projeto implementa um sistema CRUD (Create, Read, Update, Delete) genérico em Java para gerenciar entidades, com foco na entidade **Tarefa**. O sistema permite a inclusão, leitura, atualização e exclusão de tarefas em um arquivo binário. Além disso, implementa um índice direto utilizando uma tabela hash extensível para otimizar as operações de busca, conforme especificado pelo professor.
+O projeto consiste em uma base de dados CRUD (Create, Read, Update, Delete) genérica em Java, criada para gerenciar a entidade **Tarefa** com relacionamentos entre entidades, especialmente entre **Tarefa** e **Categoria** em uma relação 1:N. O armazenamento e busca de dados são otimizados por meio de estruturas indexadas, usando uma tabela hash extensível e uma Árvore B+.
 
-As tarefas gerenciadas possuem os seguintes atributos:
+Cada tarefa possui uma categoria, e a Árvore B+ permite associar várias tarefas a uma mesma categoria, viabilizando o gerenciamento eficiente das tarefas por classificação.
 
-- **ID**: Identificador único sequencial gerado automaticamente.
+As **Tarefas** têm os seguintes atributos:
+- **ID**: Identificador único gerado automaticamente.
 - **Nome**: Nome da tarefa.
-- **Data de Criação**: Data em que a tarefa foi criada.
+- **ID de Categoria**: Referência à categoria da tarefa (chave estrangeira).
+- **Data de Início**: Data em que a tarefa foi iniciada.
 - **Data de Conclusão**: Data em que a tarefa foi concluída.
 - **Status**: Estado atual da tarefa (Pendente, Em Progresso, Concluída, etc.).
-- **Prioridade**: Nível de prioridade da tarefa (Alta, Média, Baixa).
 
 ## **Estrutura do Projeto**
 
-O projeto é composto pelas seguintes classes:
+O projeto possui as seguintes classes principais:
 
 ### **1. Interface Registro**
 
-- **Descrição**: Interface que define os métodos necessários para que um objeto seja armazenado e recuperado de um arquivo binário.
+- **Descrição**: Define os métodos necessários para um objeto ser armazenado e recuperado de um arquivo binário.
 - **Métodos**:
   - `int getID()`: Retorna o ID do registro.
   - `void setID(int id)`: Define o ID do registro.
-  - `byte[] toByteArray() throws IOException`: Serializa o objeto em um array de bytes.
+  - `byte[] toByteArray() throws IOException`: Serializa o objeto para um array de bytes.
   - `void fromByteArray(byte[] ba) throws IOException`: Desserializa o objeto a partir de um array de bytes.
 
 ### **2. Interface RegistroHashExtensivel**
 
-- **Descrição**: Interface que define os métodos necessários para que um objeto seja utilizado na tabela hash extensível.
+- **Descrição**: Interface para que um objeto seja usado na tabela hash extensível.
 - **Métodos**:
-  - `int hashCode()`: Retorna o código hash do objeto (utilizado como chave).
+  - `int hashCode()`: Retorna o código hash do objeto.
   - `short size()`: Retorna o tamanho em bytes do objeto.
-  - `byte[] toByteArray() throws IOException`: Serializa o objeto em um array de bytes.
-  - `void fromByteArray(byte[] ba) throws IOException`: Desserializa o objeto a partir de um array de bytes.
+  - `byte[] toByteArray() throws IOException`: Serializa o objeto.
+  - `void fromByteArray(byte[] ba) throws IOException`: Desserializa o objeto.
 
 ### **3. Classe Tarefa**
 
 - **Descrição**: Representa a entidade Tarefa, implementando as interfaces `Registro` e `RegistroHashExtensivel<Tarefa>`.
 - **Atributos**:
-  - `int id`: Identificador único da tarefa.
+  - `int id`: ID da tarefa.
   - `String nome`: Nome da tarefa.
-  - `String dataCriacao`: Data de criação da tarefa.
-  - `String dataConclusao`: Data de conclusão da tarefa.
+  - `int idCategoria`: ID da categoria da tarefa.
+  - `String dataInicio`: Data de início.
+  - `String dataConclusao`: Data de conclusão.
   - `String status`: Status da tarefa.
-  - `String prioridade`: Prioridade da tarefa.
-- **Principais Métodos**:
-  - Construtores (padrão e com parâmetros).
-  - Getters e setters para cada atributo.
-  - Implementação dos métodos das interfaces `Registro` e `RegistroHashExtensivel<Tarefa>`.
-  - `String toString()`: Representação textual da tarefa.
+- **Métodos**: Construtores, getters, setters, `toString()` e implementação dos métodos das interfaces.
 
-### **4. Classe ParChaveEndereco**
+### **4. Classe Categoria**
 
-- **Descrição**: Classe auxiliar que representa um par de chave (hashCode) e endereço, utilizada pela tabela hash extensível.
+- **Descrição**: Representa a entidade Categoria, permitindo a classificação de tarefas.
 - **Atributos**:
-  - `int chave`: Chave (ID da tarefa).
-  - `long endereco`: Endereço do registro no arquivo.
+  - `int id`: ID da categoria.
+  - `String nome`: Nome da categoria.
+- **Métodos**: Construtores, getters e setters para manipular as categorias.
+
+### **5. Classe ParChaveEndereco**
+
+- **Descrição**: Representa um par chave (hashCode) e endereço, utilizado para indexação com a tabela hash extensível.
+- **Atributos**: `int chave` (ID) e `long endereco` (local no arquivo).
+- **Métodos**: Construtores, getters, e implementação da interface `RegistroHashExtensivel<ParChaveEndereco>`.
+
+### **6. Classe HashExtensivel<T extends RegistroHashExtensivel<T>>**
+
+- **Descrição**: Implementação da tabela hash extensível, utilizada para indexação direta.
 - **Métodos**:
-  - Construtores (padrão e com parâmetros).
-  - Getters para os atributos.
-  - Implementação dos métodos da interface `RegistroHashExtensivel<ParChaveEndereco>`.
+  - `boolean create(T elemento)`: Insere um novo par chave-endereço.
+  - `T read(int chave)`: Recupera o par chave-endereço pelo ID.
+  - `boolean update(T elemento)`: Atualiza o endereço associado ao ID.
+  - `boolean delete(int chave)`: Remove o par chave-endereço.
 
-### **5. Classe HashExtensivel<T extends RegistroHashExtensivel<T>>**
+### **7. Classe ArvoreBMais<T extends RegistroArvoreBMais<T>>**
 
-- **Descrição**: Implementação da tabela hash extensível fornecida pelo professor, utilizada para indexação dos registros. Permite operações de inserção, busca, atualização e remoção de pares chave-endereço.
-- **Principais Métodos**:
-  - `boolean create(T elemento)`: Insere um novo par chave-endereço no índice.
-  - `T read(int chave)`: Recupera o par chave-endereço associado à chave.
-  - `boolean update(T elemento)`: Atualiza o endereço associado à chave.
-  - `boolean delete(int chave)`: Remove o par chave-endereço do índice.
+- **Descrição**: Implementação da Árvore B+ para indexação indireta, permitindo busca por atributos não únicos.
+- **Métodos**: 
+  - Operações CRUD e busca baseadas em UID para armazenar e relacionar categorias com tarefas associadas.
 
-### **6. Classe Arquivo<T extends Registro & RegistroHashExtensivel<T>>**
+### **8. Classe Arquivo<T extends Registro & RegistroHashExtensivel<T>>**
 
-- **Descrição**: Classe genérica responsável por gerenciar as operações CRUD em um arquivo binário, utilizando um índice direto implementado com a tabela hash extensível.
-- **Atributos**:
-  - `RandomAccessFile arquivo`: Arquivo binário que armazena os registros.
-  - `Constructor<T> construtor`: Construtor da classe genérica T.
-  - `int ultimoID`: Último ID utilizado.
-  - `HashExtensivel<ParChaveEndereco> indice`: Instância da tabela hash extensível para indexação.
-- **Principais Métodos**:
-  - `Arquivo(Constructor<T> construtor, String nomeArquivo)`: Construtor que inicializa o arquivo e o índice.
-  - `int create(T objeto)`: Insere um novo registro no arquivo e no índice, retornando o ID.
-  - `T read(int id)`: Lê um registro a partir do ID, utilizando o índice.
-  - `boolean update(T objeto)`: Atualiza um registro existente, tratando alterações no tamanho do registro e atualizando o índice se necessário.
-  - `boolean delete(int id)`: Marca um registro como excluído e remove a entrada correspondente do índice.
+- **Descrição**: Gerencia operações CRUD em um arquivo binário com um índice direto (hash extensível).
+- **Métodos**:
+  - `int create(T objeto)`: Insere um novo registro e atualiza o índice.
+  - `T read(int id)`: Lê um registro via índice.
+  - `boolean update(T objeto)`: Atualiza um registro existente.
+  - `boolean delete(int id)`: Exclui um registro e remove do índice.
 
-### **7. Classe IO**
+### **9. Classe IO**
 
-- **Descrição**: Classe que contém o método `main` e demonstra o uso das operações CRUD com a entidade Tarefa.
+- **Descrição**: Contém o `main` para execução do sistema, ilustrando o uso das operações CRUD com tarefas e categorias.
 - **Funcionalidades**:
-  - Criação de objetos `Tarefa` para testes.
-  - Execução das operações de criação, leitura, atualização e exclusão.
-  - Exibição dos resultados no console.
+  - Criação e gerenciamento de tarefas e categorias.
+  - Testes das operações de CRUD no console.
 
 ## **Relato da Experiência**
 
-Durante o desenvolvimento deste trabalho, buscamos implementar todos os requisitos especificados, incluindo a integração da tabela hash extensível fornecida pelo professor como índice direto para otimizar as operações de busca.
-
-**Implementação dos Requisitos**
-
-- **Todos os requisitos foram implementados?**
-  - Sim, implementamos todos os requisitos, incluindo o CRUD genérico e o índice direto com tabela hash extensível.
-
 **Desafios Encontrados**
-
-- **Operação Mais Difícil**
-  - A integração da tabela hash extensível foi a operação mais desafiadora. Compreender o funcionamento interno da classe `HashExtensivel` e garantir que ela interagisse corretamente com a classe `Arquivo` exigiu muita atenção.
-
-- **Desafios na Implementação**
-  - Tivemos que ajustar a classe `Tarefa` para implementar a interface `RegistroHashExtensivel<Tarefa>`, adicionando métodos como `hashCode()` e `size()`.
-  - Criamos a classe auxiliar `ParChaveEndereco` para representar o par chave-endereço necessário para o índice.
-  - Adaptamos a classe `Arquivo` para trabalhar com o índice, atualizando os métodos CRUD para interagir com a `HashExtensivel`.
+- **Dificuldade de Implementação**: A implementação do relacionamento 1:N usando a Árvore B+ foi a operação mais complexa, pois exigiu integração cuidadosa com o índice.
 
 **Resultados Alcançados**
-
-- As operações de criação, leitura, atualização e exclusão funcionam corretamente, com o índice sendo atualizado conforme necessário.
-- A busca de registros é mais eficiente graças ao índice direto.
-- Conseguimos manipular registros de tamanho variável, tratando corretamente aumentos e reduções no tamanho dos registros durante as atualizações.
+- O sistema gerencia tarefas e categorias com eficiência, aproveitando o índice direto para acesso rápido e o índice indireto (Árvore B+) para a listagem de tarefas por categoria.
+- As operações de busca e gerenciamento de relacionamento 1:N são eficazes.
 
 ## **Checklist**
 
-- **O trabalho possui um índice direto implementado com a tabela hash extensível?**
+- **O CRUD (com índice direto) de categorias foi implementado?**  
   - **Resposta**: Sim
-
-- **A operação de inclusão insere um novo registro no fim do arquivo e no índice e retorna o ID desse registro?**
+- **Há um índice indireto de nomes para as categorias?**
+  - **Resposta**: Sim, com Árvore B+
+- **O atributo de ID de categoria, como chave estrangeira, foi criado na classe Tarefa?**
   - **Resposta**: Sim
-
-- **A operação de busca retorna os dados do registro, após localizá-lo por meio do índice direto?**
+- **É possível listar as tarefas de uma categoria?**
   - **Resposta**: Sim
-
-- **A operação de alteração altera os dados do registro e trata corretamente as reduções e aumentos no espaço do registro?**
+- **A remoção de categorias checa se há alguma tarefa vinculada a ela?**
+  - **Resposta**: Não
+- **A inclusão da categoria em uma tarefa se limita às categorias existentes?**
   - **Resposta**: Sim
-
-- **A operação de exclusão marca o registro como excluído e o remove do índice direto?**
-  - **Resposta**: Sim
-
 - **O trabalho está funcionando corretamente?**
   - **Resposta**: Sim
-
-- **O trabalho está completo?**
-  - **Resposta**: Sim
-
 - **O trabalho é original e não a cópia de um trabalho de outro grupo?**
   - **Resposta**: Sim
 
 ## **Considerações Finais**
 
-A implementação deste trabalho nos proporcionou um aprendizado significativo sobre manipulação de arquivos binários, serialização de objetos e estruturas de dados avançadas como a tabela hash extensível. A integração do índice direto melhorou consideravelmente a eficiência das operações de busca.
-
-Apesar dos desafios encontrados, conseguimos alcançar todos os objetivos propostos.
+Este projeto permitiu explorar e aprofundar conhecimentos sobre estruturação de dados complexos, manipulando arquivos indexados e entendendo a eficiência de uma Árvore B+ e uma tabela hash extensível. A utilização dessas estruturas facilita o gerenciamento escalável e eficiente de dados.
 
 **Possíveis Melhorias**
-
-- Implementar tratamento de exceções mais robusto, oferecendo feedback mais detalhado em caso de erros.
-- Implementar uma interface gráfica para facilitar a interação do usuário com o sistema.
-
+- Adicionar tratamento de exceções para feedback ao usuário.
+- Desenvolver uma interface gráfica para facilitar o uso.
+- Checagem para remoção de categorias.
