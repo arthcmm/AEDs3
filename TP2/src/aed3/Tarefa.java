@@ -1,7 +1,6 @@
-import java.io.*;
+package aed3;
 
-import aed3.Registro;
-import aed3.RegistroHashExtensivel;
+import java.io.*;
 
 public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
     private int id;
