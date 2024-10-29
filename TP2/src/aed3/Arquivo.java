@@ -1,6 +1,7 @@
 package aed3;
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 
 public class Arquivo<T extends Registro & RegistroHashExtensivel<T>> {
     private RandomAccessFile arquivo;
@@ -140,4 +141,39 @@ public class Arquivo<T extends Registro & RegistroHashExtensivel<T>> {
         }
         return false; // Não encontrado
     }
+
+    public ArrayList<T> list() throws Exception {
+    ArrayList<T> objects = new ArrayList<>();
+    try (RandomAccessFile raf = new RandomAccessFile(this.nomeArquivo, "rw")) {
+        long pos = 4;
+        if(4 + 1 >= raf.length())
+            throw new Exception("Arquivo vazio");
+        // Percorre todo o arquivo
+        while (pos < raf.length()) {
+            raf.seek(pos);
+            
+            // Ler o metadado (lápide)
+            byte lapide = raf.readByte();
+            int tamArq = raf.readInt();
+
+            // Se não está excluído
+            if (lapide == 0) {
+                byte[] array = new byte[tamArq];
+                raf.read(array);
+                
+                T obj = construtor.newInstance();
+                obj.fromByteArray(array); // Reconstrói o objeto a partir do array de bytes
+                objects.add(obj);
+                pos = raf.getFilePointer();
+            }
+            else{
+                pos = raf.getFilePointer() + tamArq;
+            }
+        }
+    } catch (Exception e) {
+        System.out.println("Erro ao listar os registros.");
+        e.printStackTrace();
+    }
+    return objects;
+}
 }
