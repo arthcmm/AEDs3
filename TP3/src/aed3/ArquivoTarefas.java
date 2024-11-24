@@ -1,17 +1,38 @@
 package aed3;
 
+import java.io.File;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ArquivoTarefas extends Arquivo<Tarefa> {
     private final BPlusTree<Integer, List<Integer>> arvoreCategoriaTarefa;
+    ArrayList<String> stopWords_list;
+    ListaInvertida listaNome;
 
     public ArquivoTarefas(Constructor<Tarefa> construtor, String nomeArquivo) throws Exception {
         super(construtor, nomeArquivo);
 
-        // Inicializa a árvore B+ para manter o relacionamento 1:N entre categoria e tarefas
+        // Inicializa a árvore B+ para manter o relacionamento 1:N entre categoria e
+        // tarefas
         arvoreCategoriaTarefa = new BPlusTree<>(4);
+
+        // Criação da lista invertida
+        listaNome = new ListaInvertida(10, "../dados/dicionario_listainv.db", "../dados/blocos_listainv.db");
+
+        // Criação da lista de stopwords
+        stopWords_list = new ArrayList<String>();
+        File FL = new File("../dados/stopwords.txt");
+        RandomAccessFile RF = new RandomAccessFile(FL, "rw");
+        while (RF.getFilePointer() < RF.length()) {
+            stopWords_list.add(RF.readLine());
+        }
+        RF.close();
+    }
+
+    boolean isStopWord(String s) {
+        return stopWords_list.contains(s);
     }
 
     @Override
@@ -29,7 +50,8 @@ public class ArquivoTarefas extends Arquivo<Tarefa> {
         // Adiciona o ID da nova tarefa à lista de tarefas da categoria
         tarefasDaCategoria.add(id);
 
-        // Insere ou atualiza a árvore B+ com a lista de tarefas atualizada para a categoria
+        // Insere ou atualiza a árvore B+ com a lista de tarefas atualizada para a
+        // categoria
         arvoreCategoriaTarefa.insert(tarefa.getIdCategoria(), tarefasDaCategoria);
 
         return id;
