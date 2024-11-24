@@ -5,6 +5,7 @@ import java.io.*;
 public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
     private int id;
     private int idCategoria;
+    private int idRotulo;
     private String nome;
     private String dataCriacao;
     private String dataConclusao;
@@ -17,7 +18,7 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
     }
 
     // Construtor com parâmetros
-    public Tarefa(int id, int idCategoria, String nome, String dataCriacao, String dataConclusao, String status, String prioridade) {
+    public Tarefa(int id, int idCategoria, int idRotulo, String nome, String dataCriacao, String dataConclusao, String status, String prioridade) {
         this.id = id;
         this.idCategoria = idCategoria;
         this.nome = nome;
@@ -46,6 +47,14 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
 
     public void setIdCategoria(int idCategoria) {
         this.idCategoria = idCategoria;
+    }
+    
+    public int getIdRotulo() {
+        return idRotulo;
+    }
+
+    public void setIdRotulo(int idRotulo) {
+        this.idRotulo = idRotulo;
     }
 
     public String getNome() {

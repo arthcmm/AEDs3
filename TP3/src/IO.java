@@ -71,7 +71,7 @@ public class IO {
                 int categoriaID = scanner.nextInt();
                 scanner.nextLine();
 
-                Tarefa tarefa = new Tarefa(-1, categoriaID, nome, data, "", status, prioridade);
+                Tarefa tarefa = new Tarefa(-1, categoriaID, -1, nome, data, "", status, prioridade);
                 arqTarefas.create(tarefa);
                 System.out.println("Tarefa criada com sucesso!");
                 break;

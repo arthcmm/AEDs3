@@ -95,4 +95,29 @@ public class ArquivoTarefas extends Arquivo<Tarefa> {
         List<Integer> tarefas = arvoreCategoriaTarefa.get(idCategoria);
         return tarefas != null && !tarefas.isEmpty(); // Verifica se a lista de tarefas não está vazia
     }
+
+    public List<Tarefa> listarTarefas() throws Exception {
+        List<Tarefa> tarefas = new ArrayList<>();
+        for (Integer idTarefa : arvoreCategoriaTarefa.listAllKeys()) {
+            List<Integer> tarefasDaCategoria = arvoreCategoriaTarefa.get(idTarefa);
+            if (tarefasDaCategoria != null) {
+                for (Integer id : tarefasDaCategoria) {
+                    Tarefa tarefa = super.read(id);
+                    if (tarefa != null) {
+                        tarefas.add(tarefa);
+                    }
+                }
+            }
+        }
+        return tarefas;
+    }
+
+    public boolean existemTarefasComRotulo(int idRotulo) throws Exception {
+        for (Tarefa tarefa : listarTarefas()) {
+            if (tarefa.getIdRotulo() == idRotulo) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

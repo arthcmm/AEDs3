@@ -55,8 +55,7 @@ public class ArquivoRotulos extends Arquivo<Rotulo> {
         return (id != null) ? super.read(id) : null;
     }
 
-    /*public boolean existeRotuloAssociado(int idRotulo, ArquivoTarefas arqTarefas) throws Exception {
+    public boolean existeRotuloAssociado(int idRotulo, ArquivoTarefas arqTarefas) throws Exception {
         return arqTarefas.existemTarefasComRotulo(idRotulo);
-    } */
-   // CHECAR QUANDO FOR FAZER BUSCAR TAREFAS POR RÓTULO
+    }
 }
