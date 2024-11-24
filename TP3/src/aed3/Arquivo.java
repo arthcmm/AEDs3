@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 public class Arquivo<T extends Registro & RegistroHashExtensivel<T>> {
     private RandomAccessFile arquivo;
     private Constructor<T> construtor;
+    @SuppressWarnings("unused") //warning chato
     private String nomeArquivo;
     private int ultimoID;
     private HashExtensivel<ParChaveEndereco> indice; // Índice direto
