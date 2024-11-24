@@ -1,4 +1,4 @@
-// ADICIONAR SEARCH, VER O ERRO NO REMOVE E CONFERIR O USO DE listAllKeys EM ARQUIVO ROTULOS
+// VER SE INSTANCEOF ESTÁ CORRETO
 package aed3;
 
 import java.util.ArrayList;
@@ -41,7 +41,53 @@ public class BPlusTree<K extends Comparable<K>, V> {
             root = ((InternalNode) root).children.get(0);
         }
     }
+    
+    // Função para pesquisar a chave associada ao valor
+public int search(K key) {
+    return searchInNode(root, key);
+}
 
+// Função auxiliar para realizar a pesquisa dentro de um nó específico
+private int searchInNode(Node node, K key) {
+    if (node instanceof LeafNode) {
+        // Se for um nó folha, basta fazer uma busca binária nas chaves
+        LeafNode leaf = (LeafNode) node;
+        int idx = Collections.binarySearch(leaf.keys, key);
+        if (idx >= 0) {
+            // Retorna o valor correspondente à chave
+            return (Integer) leaf.values.get(idx).get(0); // Assume que o valor é o ID
+        }
+    } else if (node instanceof InternalNode) {
+        // Se for um nó interno, devemos procurar em um dos filhos
+        InternalNode internal = (InternalNode) node;
+        Node child = internal.getChild(key);
+        return searchInNode(child, key);
+    }
+    return -1; // Retorna -1 caso a chave não seja encontrada
+}
+
+// Função para listar todas as chaves da árvore
+public List<K> listAllKeys() {
+    List<K> allKeys = new ArrayList<>();
+    listKeysInNode(root, allKeys);
+    return allKeys;
+}
+
+// Função auxiliar para listar todas as chaves de um nó específico
+private void listKeysInNode(Node node, List<K> allKeys) {
+    if (node instanceof LeafNode) {
+        // Se for um nó folha, adiciona todas as chaves
+        LeafNode leaf = (LeafNode) node;
+        allKeys.addAll(leaf.keys);
+    } else if (node instanceof InternalNode) {
+        // Se for um nó interno, adiciona as chaves e percorre os filhos
+        InternalNode internal = (InternalNode) node;
+        allKeys.addAll(internal.keys);
+        for (Node child : internal.children) {
+            listKeysInNode(child, allKeys);
+        }
+    }
+}
     // Classe abstrata para representar nós da árvore
     private abstract class Node {
         List<K> keys;

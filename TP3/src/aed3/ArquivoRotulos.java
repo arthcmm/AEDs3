@@ -20,11 +20,11 @@ public class ArquivoRotulos extends Arquivo<Rotulo> {
 
     @Override
     public boolean update(Rotulo rotulo) throws Exception {
-        Rotulo antigo = super.read(rotulo.getId());
+        Rotulo antigo = super.read(rotulo.getID());
         if (antigo != null) {
             // Atualiza o índice pela descrição
-            indicePorRotulo.remove(antigo.getRotulo());
-            indicePorRotulo.insert(rotulo.getRotulo(), rotulo.getId());
+            indicePorRotulo.remove(antigo.getRotulo(), rotulo.getID());
+            indicePorRotulo.insert(rotulo.getRotulo(), rotulo.getID());
         }
         return super.update(rotulo);
     }
@@ -33,7 +33,7 @@ public class ArquivoRotulos extends Arquivo<Rotulo> {
     public boolean delete(int id) throws Exception {
         Rotulo rotulo = super.read(id);
         if (rotulo != null) {
-            indicePorRotulo.remove(rotulo.getRotulo()); // Remove do índice pela descrição
+            indicePorRotulo.remove(rotulo.getRotulo(), rotulo.getID()); // Remove do índice pela descrição
         }
         return super.delete(id);
     }
@@ -55,7 +55,8 @@ public class ArquivoRotulos extends Arquivo<Rotulo> {
         return (id != null) ? super.read(id) : null;
     }
 
-    public boolean existeRotuloAssociado(int idRotulo, ArquivoTarefas arqTarefas) throws Exception {
+    /*public boolean existeRotuloAssociado(int idRotulo, ArquivoTarefas arqTarefas) throws Exception {
         return arqTarefas.existemTarefasComRotulo(idRotulo);
-    }
+    } */
+   // CHECAR QUANDO FOR FAZER BUSCAR TAREFAS POR RÓTULO
 }
