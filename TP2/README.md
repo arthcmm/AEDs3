@@ -114,7 +114,7 @@ O projeto possui as seguintes classes principais:
 - **É possível listar as tarefas de uma categoria?**
   - **Resposta**: Sim
 - **A remoção de categorias checa se há alguma tarefa vinculada a ela?**
-  - **Resposta**: Não
+  - **Resposta**: Sim
 - **A inclusão da categoria em uma tarefa se limita às categorias existentes?**
   - **Resposta**: Sim
 - **O trabalho está funcionando corretamente?**
@@ -129,4 +129,4 @@ Este projeto permitiu explorar e aprofundar conhecimentos sobre estruturação d
 **Possíveis Melhorias**
 - Adicionar tratamento de exceções para feedback ao usuário.
 - Desenvolver uma interface gráfica para facilitar o uso.
-- Checagem para remoção de categorias.
+- Arrumar listagem de categorias
