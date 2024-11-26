@@ -28,7 +28,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
     public V get(K key) {
         List<V> result = root.get(key);
         if (result != null && !result.isEmpty()) {
-            return result.getFirst();  // Retorna apenas o primeiro item da lista
+            return result.get(0);  // Retorna apenas o primeiro item da lista
         }
         return null; // Se não encontrar, retorna null
     }
@@ -37,7 +37,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
     public void remove(K key, V value) {
         root.remove(key, value);
         if (root instanceof InternalNode && ((InternalNode) root).children.size() == 1) {
-            root = ((InternalNode) root).children.getFirst();
+            root = ((InternalNode) root).children.get(0);
         }
     }
 
@@ -193,7 +193,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
 
         @Override
         K getFirstLeafKey() {
-            return keys.getFirst();
+            return keys.get(0);
         }
     }
 
@@ -262,7 +262,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
 
         @Override
         K getFirstLeafKey() {
-            return children.getFirst().getFirstLeafKey();
+            return children.get(0).getFirstLeafKey();
         }
 
         private Node getChild(K key) {
