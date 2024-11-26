@@ -1,6 +1,6 @@
 # **Trabalho Prático 3 - AED3**
 
-###Grupo: Arthur Castro, Matheus Campbell e Pedro Gaioso
+### Grupo: Arthur Castro, Matheus Campbell e Pedro Gaioso
 
 ---
 
