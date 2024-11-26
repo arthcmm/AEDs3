@@ -3,6 +3,8 @@ import aed3.ArquivoTarefas;
 import aed3.Categoria;
 import aed3.Tarefa;
 
+import java.time.LocalDate;
+
 public class IO {
 
     public static void main(String[] args) {
@@ -17,12 +19,12 @@ public class IO {
             arqCategorias.create(c2);
 
             // Cria várias tarefas para a categoria Trabalho
-            Tarefa t1 = new Tarefa(-1, c1.getID(), "Estudar Java", "2023-01-01", "", "Pendente", "Alta");
-            Tarefa t2 = new Tarefa(-1, c1.getID(), "Fazer documentação", "2023-01-02", "", "Em Progresso", "Média");
-            Tarefa t3 = new Tarefa(-1, c1.getID(), "Reunião com equipe", "2023-01-03", "", "Pendente", "Alta");
+            Tarefa t1 = new Tarefa(-1, c1.getID(), "Estudar Java", LocalDate.parse("2023-01-01"), null, "Pendente", 1);
+            Tarefa t2 = new Tarefa(-1, c1.getID(), "Fazer documentação", LocalDate.parse("2023-01-02"), null, "Em Progresso", 2);
+            Tarefa t3 = new Tarefa(-1, c1.getID(), "Reunião com equipe", LocalDate.parse("2023-01-03"), null, "Pendente", 2);
 
             // Cria uma tarefa para a categoria Pessoal
-            Tarefa t4 = new Tarefa(-1, c2.getID(), "Ir ao supermercado", "2023-01-02", "", "Pendente", "Média");
+            Tarefa t4 = new Tarefa(-1, c2.getID(), "Ir ao supermercado", LocalDate.parse("2023-01-02"), null, "Pendente", 1);
 
             // Adiciona as tarefas
             arqTarefas.create(t1);
@@ -30,6 +32,10 @@ public class IO {
             arqTarefas.create(t3);
             arqTarefas.create(t4);
 
+            //listar Todas As Tarefas
+            arqTarefas.listarTodasAsTarefas();
+            //listar categorias
+            arqCategorias.listarCategorias();
             // Listar todas as tarefas da categoria Trabalho (mais de uma tarefa)
             System.out.println("Tarefas na categoria Trabalho:");
             arqTarefas.listarTarefasPorCategoria(c1.getID());
@@ -41,7 +47,7 @@ public class IO {
             // Atualizar tarefa
             System.out.println("\nAtualizando tarefa...");
             t1.setStatus("Concluída");
-            t1.setDataConclusao("2023-01-10");
+            t1.setDataConclusao(LocalDate.parse("2023-01-10"));
             arqTarefas.update(t1);
 
             // Listar tarefas após a atualização
@@ -81,6 +87,8 @@ public class IO {
             } else {
                 System.out.println("Falha ao excluir a categoria 'Trabalho'.");
             }
+
+            arqCategorias.listarCategorias();
 
         } catch (Exception e) {
             e.printStackTrace();

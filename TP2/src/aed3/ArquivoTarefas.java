@@ -53,6 +53,13 @@ public class ArquivoTarefas extends Arquivo<Tarefa> {
         return super.delete(id);
     }
 
+    public void listarTodasAsTarefas() throws Exception {
+        System.out.println("Lista de todas as tarefas:");
+        for ( Tarefa tarefa : super.readAll()){
+            System.out.println(tarefa);
+        }
+    }
+
     public void listarTarefasPorCategoria(int idCategoria) throws Exception {
         List<Integer> tarefasDaCategoria = arvoreCategoriaTarefa.get(idCategoria);
         if (tarefasDaCategoria == null || tarefasDaCategoria.isEmpty()) {
