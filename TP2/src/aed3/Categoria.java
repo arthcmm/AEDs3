@@ -55,4 +55,12 @@ public class Categoria implements Registro, RegistroHashExtensivel<Categoria> {
     public short size() {
         return (short) (Integer.BYTES + nome.length() * 2 + 2);
     }
+
+
+    @Override
+    public String toString() {
+        return "Categoria [id=" + id + "," + "nome=" + nome +"]";
+    }
+
+
 }

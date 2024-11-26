@@ -1,4 +1,3 @@
-// VER SE INSTANCEOF ESTÁ CORRETO
 package aed3;
 
 import java.util.ArrayList;
@@ -29,7 +28,7 @@ public class BPlusTree<K extends Comparable<K>, V> {
     public V get(K key) {
         List<V> result = root.get(key);
         if (result != null && !result.isEmpty()) {
-            return result.get(0);  // Retorna apenas o primeiro item da lista
+            return result.getFirst();  // Retorna apenas o primeiro item da lista
         }
         return null; // Se não encontrar, retorna null
     }
@@ -38,56 +37,55 @@ public class BPlusTree<K extends Comparable<K>, V> {
     public void remove(K key, V value) {
         root.remove(key, value);
         if (root instanceof InternalNode && ((InternalNode) root).children.size() == 1) {
+            root = ((InternalNode) root).children.getFirst();
+        }
+    }
+
+    public void remove(K key) {
+        root.remove(key, null); // Remove todos os valores associados à chave
+        if (root instanceof InternalNode && ((InternalNode) root).children.size() == 1) {
             root = ((InternalNode) root).children.get(0);
         }
     }
-    
-    // Função para pesquisar a chave associada ao valor
-public int search(K key) {
-    return searchInNode(root, key);
-}
 
-// Função auxiliar para realizar a pesquisa dentro de um nó específico
-private int searchInNode(Node node, K key) {
-    if (node instanceof LeafNode) {
-        // Se for um nó folha, basta fazer uma busca binária nas chaves
-        LeafNode leaf = (LeafNode) node;
-        int idx = Collections.binarySearch(leaf.keys, key);
-        if (idx >= 0) {
-            // Retorna o valor correspondente à chave
-            return (Integer) leaf.values.get(idx).get(0); // Assume que o valor é o ID
+    public List<K> listAllKeys() {
+        List<K> allKeys = new ArrayList<>();
+        Node current = root;
+
+        // Percorrer até o primeiro nó folha
+        while (current instanceof InternalNode) {
+            current = ((InternalNode) current).children.get(0);
         }
-    } else if (node instanceof InternalNode) {
-        // Se for um nó interno, devemos procurar em um dos filhos
-        InternalNode internal = (InternalNode) node;
-        Node child = internal.getChild(key);
-        return searchInNode(child, key);
+
+        // Coletar todas as chaves de cada nó folha
+        while (current != null) {
+            LeafNode leaf = (LeafNode) current;
+            allKeys.addAll(leaf.keys);
+            current = leaf.next;
+        }
+
+        return allKeys;
     }
-    return -1; // Retorna -1 caso a chave não seja encontrada
-}
 
-// Função para listar todas as chaves da árvore
-public List<K> listAllKeys() {
-    List<K> allKeys = new ArrayList<>();
-    listKeysInNode(root, allKeys);
-    return allKeys;
-}
+    public List<V> search(K key) {
+        return root.get(key);
+    }
 
-// Função auxiliar para listar todas as chaves de um nó específico
-private void listKeysInNode(Node node, List<K> allKeys) {
-    if (node instanceof LeafNode) {
-        // Se for um nó folha, adiciona todas as chaves
-        LeafNode leaf = (LeafNode) node;
-        allKeys.addAll(leaf.keys);
-    } else if (node instanceof InternalNode) {
-        // Se for um nó interno, adiciona as chaves e percorre os filhos
-        InternalNode internal = (InternalNode) node;
-        allKeys.addAll(internal.keys);
-        for (Node child : internal.children) {
-            listKeysInNode(child, allKeys);
+
+    public void printTree() {
+        printNode(root, 0);
+    }
+
+    private void printNode(Node node, int level) {
+        System.out.println("Level " + level + " Keys: " + node.keys);
+
+        if (node instanceof InternalNode) {
+            for (Node child : ((InternalNode) node).children) {
+                printNode(child, level + 1);
+            }
         }
     }
-}
+
     // Classe abstrata para representar nós da árvore
     private abstract class Node {
         List<K> keys;
@@ -195,7 +193,7 @@ private void listKeysInNode(Node node, List<K> allKeys) {
 
         @Override
         K getFirstLeafKey() {
-            return keys.get(0);
+            return keys.getFirst();
         }
     }
 
@@ -264,7 +262,7 @@ private void listKeysInNode(Node node, List<K> allKeys) {
 
         @Override
         K getFirstLeafKey() {
-            return children.get(0).getFirstLeafKey();
+            return children.getFirst().getFirstLeafKey();
         }
 
         private Node getChild(K key) {

@@ -23,6 +23,12 @@ public class ArquivoCategorias extends Arquivo<Categoria> {
             return false;
         }
         return super.delete(idCategoria);
-    }      
+    }
+
+    public void listarCategorias() throws Exception {
+        for (Categoria categoria: super.readAll()){
+            System.out.println(categoria);
+        }
+    }
 
 }

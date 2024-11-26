@@ -2,15 +2,16 @@ package aed3;
 
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Arquivo<T extends Registro & RegistroHashExtensivel<T>> {
     private RandomAccessFile arquivo;
     private Constructor<T> construtor;
-    @SuppressWarnings("unused") //warning chato
     private String nomeArquivo;
     private int ultimoID;
     private HashExtensivel<ParChaveEndereco> indice; // Índice direto
-    private String filePath = "dados/";
+    protected String filePath = "src/dados/";
 
     public Arquivo(Constructor<T> construtor, String nomeArquivo) throws Exception {
         this.construtor = construtor;
@@ -80,6 +81,30 @@ public class Arquivo<T extends Registro & RegistroHashExtensivel<T>> {
         }
         return null; // Não encontrado
     }
+
+    public List<T> readAll() throws Exception {
+        List<T> registros = new ArrayList<>();
+
+        // Começa após o cabeçalho do arquivo
+        arquivo.seek(4);
+
+        while (arquivo.getFilePointer() < arquivo.length()) {
+            long endereco = arquivo.getFilePointer();
+            byte lapide = arquivo.readByte();
+            short tamanho = arquivo.readShort();
+            byte[] ba = new byte[tamanho];
+            arquivo.read(ba);
+
+            if (lapide != '*') { // Apenas registros não excluídos
+                T objeto = construtor.newInstance();
+                objeto.fromByteArray(ba);
+                registros.add(objeto);
+            }
+        }
+
+        return registros;
+    }
+
 
     public boolean update(T novoObjeto) throws Exception {
         // Usa o índice para obter o endereço

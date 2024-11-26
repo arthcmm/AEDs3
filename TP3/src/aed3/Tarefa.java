@@ -1,16 +1,16 @@
 package aed3;
 
 import java.io.*;
+import java.time.LocalDate;
 
 public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
     private int id;
     private int idCategoria;
-    private int idRotulo;
     private String nome;
-    private String dataCriacao;
-    private String dataConclusao;
+    private LocalDate dataCriacao;
+    private LocalDate dataConclusao;
     private String status;
-    private String prioridade;
+    private int prioridade;
 
     // Construtor padrão
     public Tarefa() {
@@ -18,7 +18,7 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
     }
 
     // Construtor com parâmetros
-    public Tarefa(int id, int idCategoria, int idRotulo, String nome, String dataCriacao, String dataConclusao, String status, String prioridade) {
+    public Tarefa(int id, int idCategoria, String nome, LocalDate dataCriacao, LocalDate dataConclusao, String status, int prioridade) {
         this.id = id;
         this.idCategoria = idCategoria;
         this.nome = nome;
@@ -48,14 +48,6 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
     public void setIdCategoria(int idCategoria) {
         this.idCategoria = idCategoria;
     }
-    
-    public int getIdRotulo() {
-        return idRotulo;
-    }
-
-    public void setIdRotulo(int idRotulo) {
-        this.idRotulo = idRotulo;
-    }
 
     public String getNome() {
         return nome;
@@ -65,19 +57,19 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
         this.nome = nome;
     }
 
-    public String getDataCriacao() {
+    public LocalDate getDataCriacao() {
         return dataCriacao;
     }
 
-    public void setDataCriacao(String dataCriacao) {
+    public void setDataCriacao(LocalDate dataCriacao) {
         this.dataCriacao = dataCriacao;
     }
 
-    public String getDataConclusao() {
+    public LocalDate getDataConclusao() {
         return dataConclusao;
     }
 
-    public void setDataConclusao(String dataConclusao) {
+    public void setDataConclusao(LocalDate dataConclusao) {
         this.dataConclusao = dataConclusao;
     }
 
@@ -89,11 +81,11 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
         this.status = status;
     }
 
-    public String getPrioridade() {
+    public int getPrioridade() {
         return prioridade;
     }
 
-    public void setPrioridade(String prioridade) {
+    public void setPrioridade(int prioridade) {
         this.prioridade = prioridade;
     }
 
@@ -106,10 +98,13 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
         dos.writeInt(id);
         dos.writeInt(idCategoria);
         dos.writeUTF(nome);
-        dos.writeUTF(dataCriacao);
-        dos.writeUTF(dataConclusao);
+        dos.writeLong(dataCriacao.toEpochDay());
+        dos.writeBoolean(dataConclusao != null);
+        if (dataConclusao != null) {
+            dos.writeLong(dataConclusao.toEpochDay());
+        }
         dos.writeUTF(status);
-        dos.writeUTF(prioridade);
+        dos.writeInt(prioridade);
 
         return baos.toByteArray();
     }
@@ -123,10 +118,15 @@ public class Tarefa implements Registro, RegistroHashExtensivel<Tarefa> {
         id = dis.readInt();
         idCategoria = dis.readInt();
         nome = dis.readUTF();
-        dataCriacao = dis.readUTF();
-        dataConclusao = dis.readUTF();
+        dataCriacao = LocalDate.ofEpochDay(dis.readLong());
+        boolean hasDataConclusao = dis.readBoolean();
+        if (hasDataConclusao) {
+            dataConclusao = LocalDate.ofEpochDay(dis.readLong());
+        } else {
+            dataConclusao = null;
+        }
         status = dis.readUTF();
-        prioridade = dis.readUTF();
+        prioridade = dis.readInt();
     }
 
     // Implementação do hashCode() da interface RegistroHashExtensivel

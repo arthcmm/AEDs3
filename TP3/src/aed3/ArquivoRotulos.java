@@ -1,7 +1,7 @@
-//todos os erros (search, remove, listAllKeys são de falta do método na classe BPlusTree)
 package aed3;
 
 import java.lang.reflect.Constructor;
+import java.util.List;
 
 public class ArquivoRotulos extends Arquivo<Rotulo> {
     private final BPlusTree<String, Integer> indicePorRotulo; // Índice indireto para buscar pela descrição do rótulo
@@ -41,18 +41,27 @@ public class ArquivoRotulos extends Arquivo<Rotulo> {
     public String listarRotulos() throws Exception {
         StringBuilder sb = new StringBuilder();
         for (String descricao : indicePorRotulo.listAllKeys()) {
-            int id = indicePorRotulo.search(descricao);
-            Rotulo rotulo = super.read(id);
-            if (rotulo != null) {
-                sb.append(rotulo).append("\n");
+            List<Integer> rotulos = indicePorRotulo.search(descricao);
+            for(int rotuloId : rotulos){
+                Rotulo rotulo = super.read(rotuloId);
+                if (rotulo != null) {
+                    sb.append(rotulo).append("\n");
+                }
             }
         }
         return sb.toString();
     }
 
-    public Rotulo buscarPorRotulo(String rotulo) throws Exception {
-        Integer id = indicePorRotulo.search(rotulo);
-        return (id != null) ? super.read(id) : null;
+    public String buscarPorRotulo(String rotuloToSearch) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        List<Integer> rotulos = indicePorRotulo.search(rotuloToSearch);
+        for(int rotuloId : rotulos){
+            Rotulo rotulo = super.read(rotuloId);
+            if (rotulo != null) {
+                sb.append(rotulo).append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     public boolean existeRotuloAssociado(int idRotulo, ArquivoTarefas arqTarefas) throws Exception {
