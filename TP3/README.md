@@ -1,9 +1,6 @@
 # **Trabalho Prático 3 - AED3**
 
-## **Integrantes do Grupo**
-- **Nome do Participante 1**
-- **Nome do Participante 2**
-- (adicione outros integrantes, se houver)
+###Grupo: Arthur Castro, Matheus Campbell e Pedro Gaioso
 
 ---
 
