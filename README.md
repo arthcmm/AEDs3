@@ -6,6 +6,7 @@ Este repositório contém os trabalhos práticos desenvolvidos para a disciplina
 - `TP1/` - Contém os arquivos e código do Trabalho Prático 1.
 - `TP2/` - Contém os arquivos e código do Trabalho Prático 2.
 - `TP3/` - Contém os arquivos e código do Trabalho Prático 3.
+- `TP4/` - Contém os arquivos e código do Trabalho Prático 4.
 
 ## Integrantes do Grupo
 
