@@ -1,94 +1,162 @@
 package aed3;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
-public class BPlusTree<K extends Comparable<K>, V> {
+public class BPlusTree<K extends Comparable<K>, V> implements Serializable {
     private final int grau;
-    private Node root;
+    private final String storageFilePath;
+    private int rootNodeId;
+    private int nextNodeId;
 
-    public BPlusTree(int grau) {
+    public BPlusTree(int grau, String storageFilePath) {
         this.grau = grau;
-        this.root = new LeafNode();
+        this.storageFilePath = storageFilePath;
+        initializeStorage();
     }
 
-    // Método para inserir um valor associado a uma chave
+    private void initializeStorage() {
+        File storageFile = new File(storageFilePath);
+        if (!storageFile.exists()) {
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(storageFile))) {
+                LeafNode root = new LeafNode();
+                root.id = nextNodeId++;
+                rootNodeId = root.id;
+                oos.writeObject(root);
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao inicializar armazenamento: " + e.getMessage());
+            }
+        }
+    }
+
+    public V get(K key) {
+        Node root = loadNode(rootNodeId);
+        List<V> values = root.get(key);
+        return (values != null && !values.isEmpty()) ? values.get(0) : null; // Retorna o primeiro valor ou null se vazio
+    }
+
     public void insert(K key, V value) {
+        Node root = loadNode(rootNodeId);
         root.insert(key, value);
         if (root.isOverflow()) {
             InternalNode newRoot = new InternalNode();
-            newRoot.children.add(root);
-            newRoot.splitChild(0);
-            root = newRoot;
+            newRoot.id = nextNodeId++;
+            newRoot.children.add(root.id);
+            newRoot.splitChild(0, this);
+            saveNode(newRoot);
+            rootNodeId = newRoot.id;
         }
+        saveNode(root);
     }
 
-    // Método para buscar uma lista de valores associados a uma chave
-    public V get(K key) {
-        List<V> result = root.get(key);
-        if (result != null && !result.isEmpty()) {
-            return result.get(0);  // Retorna apenas o primeiro item da lista
-        }
-        return null; // Se não encontrar, retorna null
-    }
-
-    // Método para remover um valor associado a uma chave
-    public void remove(K key, V value) {
-        root.remove(key, value);
+    public void remove(K idCategoria, V tarefaDaCategoria) {
+        Node root = loadNode(rootNodeId);
+        root.remove(idCategoria, tarefaDaCategoria);
         if (root instanceof InternalNode && ((InternalNode) root).children.size() == 1) {
-            root = ((InternalNode) root).children.get(0);
+            rootNodeId = ((InternalNode) root).children.get(0);
+        }
+        saveNode(root);
+    }
+
+    private Node loadNode(int id) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(storageFilePath))) {
+            while (true) {
+                Node node = (Node) ois.readObject();
+                if (node.id == id) {
+                    return node;
+                }
+            }
+        } catch (EOFException e) {
+            throw new RuntimeException("Nó não encontrado: " + id);
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Erro ao carregar nó: " + e.getMessage());
         }
     }
 
-    public void remove(K key) {
-        root.remove(key, null); // Remove todos os valores associados à chave
-        if (root instanceof InternalNode && ((InternalNode) root).children.size() == 1) {
-            root = ((InternalNode) root).children.get(0);
+    private void saveNode(Node node) {
+        File tempFile = new File(storageFilePath + ".tmp");
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(storageFilePath));
+             ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(tempFile))) {
+            boolean nodeWritten = false;
+
+            while (true) {
+                try {
+                    Node existingNode = (Node) ois.readObject();
+                    if (existingNode.id == node.id) {
+                        oos.writeObject(node);
+                        nodeWritten = true;
+                    } else {
+                        oos.writeObject(existingNode);
+                    }
+                } catch (EOFException e) {
+                    break;
+                }
+            }
+
+            if (!nodeWritten) {
+                oos.writeObject(node);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Erro ao salvar nó: " + e.getMessage());
         }
+
+        tempFile.renameTo(new File(storageFilePath));
     }
 
     public List<K> listAllKeys() {
         List<K> allKeys = new ArrayList<>();
-        Node current = root;
+        Node current = loadNode(rootNodeId);
 
-        // Percorrer até o primeiro nó folha
+        // Percorre até encontrar o primeiro nó folha
         while (current instanceof InternalNode) {
-            current = ((InternalNode) current).children.get(0);
+            current = loadNode(((InternalNode) current).children.get(0));
         }
 
-        // Coletar todas as chaves de cada nó folha
-        while (current != null) {
+        // Coleta as chaves de todos os nós folha
+        while (current instanceof LeafNode) {
             LeafNode leaf = (LeafNode) current;
             allKeys.addAll(leaf.keys);
-            current = leaf.next;
+            if (leaf.nextNodeId != -1) {
+                current = loadNode(leaf.nextNodeId); // Avança para o próximo nó folha
+            } else {
+                break;
+            }
         }
 
         return allKeys;
     }
 
-    public List<V> search(K key) {
-        return root.get(key);
-    }
+    public List<V> search(K descricao) {
+        List<V> results = new ArrayList<>();
+        Node current = loadNode(rootNodeId);
 
+        // Percorre até o primeiro nó folha
+        while (current instanceof InternalNode) {
+            current = loadNode(((InternalNode) current).children.get(0));
+        }
 
-    public void printTree() {
-        printNode(root, 0);
-    }
-
-    private void printNode(Node node, int level) {
-        System.out.println("Level " + level + " Keys: " + node.keys);
-
-        if (node instanceof InternalNode) {
-            for (Node child : ((InternalNode) node).children) {
-                printNode(child, level + 1);
+        // Procura por valores correspondentes em todos os nós folha
+        while (current instanceof LeafNode) {
+            LeafNode leaf = (LeafNode) current;
+            for (int i = 0; i < leaf.keys.size(); i++) {
+                if (leaf.keys.get(i).compareTo(descricao) == 0) { // Compara a chave com a descrição
+                    results.addAll(leaf.values.get(i)); // Adiciona todos os valores associados à chave
+                }
+            }
+            if (leaf.nextNodeId != -1) {
+                current = loadNode(leaf.nextNodeId); // Avança para o próximo nó folha
+            } else {
+                break;
             }
         }
+
+        return results;
     }
 
-    // Classe abstrata para representar nós da árvore
-    private abstract class Node {
-        List<K> keys;
+
+    private abstract class Node implements Serializable {
+        int id;
+        protected List<K> keys = new ArrayList<>();
 
         abstract List<V> get(K key);
 
@@ -100,46 +168,37 @@ public class BPlusTree<K extends Comparable<K>, V> {
 
         abstract boolean isUnderflow();
 
-        abstract void merge(Node sibling);
-
         abstract Node split();
+
+        abstract void merge(Node sibling);
 
         abstract K getFirstLeafKey();
     }
 
-    // Classe que representa nós folha
     private class LeafNode extends Node {
-        List<List<V>> values; // Agora cada chave está associada a uma lista de valores
-        LeafNode next;
-
-        LeafNode() {
-            this.keys = new ArrayList<>();
-            this.values = new ArrayList<>();
-        }
+        List<List<V>> values = new ArrayList<>();
+        int nextNodeId = -1;
 
         @Override
         List<V> get(K key) {
             int idx = Collections.binarySearch(keys, key);
             if (idx >= 0) {
-                return values.get(idx); // Retorna a lista de valores para a chave
-            } else {
-                return new ArrayList<>(); // Retorna lista vazia se a chave não for encontrada
+                return values.get(idx); // Retorna a lista de valores associada à chave
             }
+            return Collections.emptyList(); // Retorna uma lista vazia se a chave não for encontrada
         }
 
         @Override
         void insert(K key, V value) {
             int idx = Collections.binarySearch(keys, key);
             if (idx >= 0) {
-                // Chave já existe, adicionar o valor à lista de valores
-                values.get(idx).add(value);
+                values.get(idx).add(value); // Adiciona o valor à lista existente
             } else {
-                // Nova chave, inserir chave e valor
                 idx = -idx - 1;
-                keys.add(idx, key);
+                keys.add(idx, key); // Insere a chave na posição correta
                 List<V> valueList = new ArrayList<>();
                 valueList.add(value);
-                values.add(idx, valueList);
+                values.add(idx, valueList); // Adiciona a nova lista de valores
             }
         }
 
@@ -147,9 +206,8 @@ public class BPlusTree<K extends Comparable<K>, V> {
         void remove(K key, V value) {
             int idx = Collections.binarySearch(keys, key);
             if (idx >= 0) {
-                values.get(idx).remove(value); // Remove o valor da lista de valores
+                values.get(idx).remove(value);
                 if (values.get(idx).isEmpty()) {
-                    // Se a lista de valores estiver vazia, remove a chave
                     keys.remove(idx);
                     values.remove(idx);
                 }
@@ -163,20 +221,13 @@ public class BPlusTree<K extends Comparable<K>, V> {
 
         @Override
         boolean isUnderflow() {
-            return keys.size() < grau / 2;
-        }
-
-        @Override
-        void merge(Node sibling) {
-            LeafNode node = (LeafNode) sibling;
-            keys.addAll(node.keys);
-            values.addAll(node.values);
-            next = node.next;
+            return keys.size() < Math.ceil((grau - 1) / 2.0);
         }
 
         @Override
         Node split() {
             LeafNode sibling = new LeafNode();
+            sibling.id = nextNodeId++;
             int midIndex = keys.size() / 2;
 
             sibling.keys.addAll(keys.subList(midIndex, keys.size()));
@@ -185,10 +236,18 @@ public class BPlusTree<K extends Comparable<K>, V> {
             keys.subList(midIndex, keys.size()).clear();
             values.subList(midIndex, values.size()).clear();
 
-            sibling.next = next;
-            next = sibling;
+            sibling.nextNodeId = nextNodeId;
+            nextNodeId = sibling.id;
 
             return sibling;
+        }
+
+        @Override
+        void merge(Node sibling) {
+            LeafNode leafSibling = (LeafNode) sibling;
+            keys.addAll(leafSibling.keys);
+            values.addAll(leafSibling.values);
+            nextNodeId = leafSibling.nextNodeId;
         }
 
         @Override
@@ -197,36 +256,41 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
     }
 
-    // Classe que representa nós internos
     private class InternalNode extends Node {
-        List<Node> children;
-
-        InternalNode() {
-            this.keys = new ArrayList<>();
-            this.children = new ArrayList<>();
-        }
+        List<Integer> children = new ArrayList<>();
 
         @Override
         List<V> get(K key) {
-            return getChild(key).get(key);
+            int idx = Collections.binarySearch(keys, key);
+            if (idx >= 0) idx++;
+            return loadNode(children.get(idx)).get(key);
         }
 
         @Override
-        void insert(K key, V value) {
-            Node child = getChild(key);
-            child.insert(key, value);
-            if (child.isOverflow()) {
-                splitChild(children.indexOf(child));
+        public void insert(K key, V value) {
+            Node root = loadNode(rootNodeId);
+            root.insert(key, value);
+            if (root.isOverflow()) {
+                InternalNode newRoot = new InternalNode();
+                newRoot.id = nextNodeId++;
+                newRoot.children.add(root.id);
+                newRoot.splitChild(0, BPlusTree.this); // Passa o índice e a instância da árvore
+                saveNode(newRoot);
+                rootNodeId = newRoot.id;
             }
+            saveNode(root);
         }
 
         @Override
         void remove(K key, V value) {
-            Node child = getChild(key);
+            int idx = Collections.binarySearch(keys, key);
+            if (idx >= 0) idx++;
+            Node child = loadNode(children.get(idx));
             child.remove(key, value);
             if (child.isUnderflow()) {
-                mergeChild(children.indexOf(child));
+                mergeChild(idx);
             }
+            saveNode(child);
         }
 
         @Override
@@ -236,19 +300,13 @@ public class BPlusTree<K extends Comparable<K>, V> {
 
         @Override
         boolean isUnderflow() {
-            return keys.size() < grau / 2;
-        }
-
-        @Override
-        void merge(Node sibling) {
-            InternalNode node = (InternalNode) sibling;
-            keys.addAll(node.keys);
-            children.addAll(node.children);
+            return keys.size() < Math.ceil((grau - 1) / 2.0);
         }
 
         @Override
         Node split() {
             InternalNode sibling = new InternalNode();
+            sibling.id = nextNodeId++;
             int midIndex = keys.size() / 2;
 
             sibling.keys.addAll(keys.subList(midIndex + 1, keys.size()));
@@ -261,33 +319,34 @@ public class BPlusTree<K extends Comparable<K>, V> {
         }
 
         @Override
+        void merge(Node sibling) {
+            InternalNode internalSibling = (InternalNode) sibling;
+            keys.addAll(internalSibling.keys);
+            children.addAll(internalSibling.children);
+        }
+
+        @Override
         K getFirstLeafKey() {
-            return children.get(0).getFirstLeafKey();
+            return loadNode(children.get(0)).getFirstLeafKey();
         }
 
-        private Node getChild(K key) {
-            int idx = Collections.binarySearch(keys, key);
-            if (idx >= 0) {
-                idx++;
-            } else {
-                idx = -idx - 1;
-            }
-            return children.get(idx);
-        }
-
-        private void splitChild(int idx) {
-            Node child = children.get(idx);
+        private void splitChild(int idx, BPlusTree<K, V> tree) {
+            Node child = tree.loadNode(children.get(idx));
             Node sibling = child.split();
-            children.add(idx + 1, sibling);
+            children.add(idx + 1, sibling.id);
             keys.add(idx, sibling.getFirstLeafKey());
+            tree.saveNode(child);
+            tree.saveNode(sibling);
         }
 
         private void mergeChild(int idx) {
-            Node child = children.get(idx);
-            Node sibling = children.get(idx + 1);
+            Node child = loadNode(children.get(idx));
+            Node sibling = loadNode(children.get(idx + 1));
             child.merge(sibling);
-            children.remove(sibling);
+            children.remove(idx + 1);
             keys.remove(idx);
+            saveNode(child);
         }
     }
+
 }

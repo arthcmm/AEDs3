@@ -8,7 +8,7 @@ public class ArquivoRotulos extends Arquivo<Rotulo> {
 
     public ArquivoRotulos(Constructor<Rotulo> construtor, String nomeArquivo) throws Exception {
         super(construtor, nomeArquivo);
-        indicePorRotulo = new BPlusTree<>(4); // Inicializa a Árvore B+ com ordem 4
+        indicePorRotulo = new BPlusTree<>(4,"ArquivoRotulos.arv"); // Inicializa a Árvore B+ com ordem 4
     }
 
     @Override

@@ -7,7 +7,7 @@ public class ArquivoCategorias extends Arquivo<Categoria> {
 
     public ArquivoCategorias(Constructor<Categoria> construtor, String nomeArquivo) throws Exception {
         super(construtor, nomeArquivo);
-        indicePorNome = new BPlusTree<>(4); // Inicializa o índice de nomes (Árvore B+)
+        indicePorNome = new BPlusTree<>(4,"ArquivoCategorias.arv"); // Inicializa o índice de nomes (Árvore B+)
     }
 
     @Override
