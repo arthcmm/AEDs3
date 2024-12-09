@@ -7,9 +7,13 @@ public class Teste {
     public static void main(String[] args) {
         try {
             // Instanciando os arquivos de tarefas, categorias e rótulos
-            ArquivoTarefas arqTarefas = new ArquivoTarefas(Tarefa.class.getConstructor(), "tarefas.db");
+            ArquivoTarefas arqTarefas = new ArquivoTarefas(Tarefa.class.getConstructor(), "tarefas_.db");
             ArquivoCategorias arqCategorias = new ArquivoCategorias(Categoria.class.getConstructor(), "categorias.db");
             ArquivoRotulos arqRotulos = new ArquivoRotulos(Rotulo.class.getConstructor(), "rotulos.db");
+
+            // Caminhos de backup
+            String caminhoBackup = "src/backups/backup_2024-12-09";
+            String caminhoRecuperacao = "src/dados_recuperados";
 
             // Criar categorias e verificar
             System.out.println("Criando categorias...");
@@ -36,7 +40,7 @@ public class Teste {
             Tarefa t2 = new Tarefa(-1, c1.getID(), "Fazer documentação", LocalDate.parse("2023-01-02"), null, "Em Progresso", 2);
             Tarefa t3 = new Tarefa(-1, c1.getID(), "Reunião com equipe", LocalDate.parse("2023-01-03"), null, "Pendente", 2);
             Tarefa t4 = new Tarefa(-1, c2.getID(), "Ir ao supermercado", LocalDate.parse("2023-01-02"), null, "Pendente", 1);
-            Tarefa t5 = new Tarefa(-1, c2.getID(), "teste de persistencia", LocalDate.parse("2023-01-02"), null, "Pendente", 1);
+            Tarefa t5 = new Tarefa(-1, c2.getID(), "Teste de persistência", LocalDate.parse("2023-01-02"), null, "Pendente", 1);
             t1.setID(arqTarefas.create(t1));
             t2.setID(arqTarefas.create(t2));
             t3.setID(arqTarefas.create(t3));
@@ -79,45 +83,18 @@ public class Teste {
             System.out.println("Tarefa atualizada:");
             arqTarefas.listarTarefasPorCategoria(c1.getID());
 
-            // Excluir tarefa e verificar
-            System.out.println("\nExcluindo tarefa 4 (Pessoal)...");
-            arqTarefas.delete(t4.getID());
-            Tarefa tarefaExcluida = arqTarefas.read(t4.getID());
-            if (tarefaExcluida == null) {
-                System.out.println("Tarefa 4 excluída com sucesso.");
-            } else {
-                System.out.println("Falha ao excluir a tarefa 4.");
-            }
+            // Criar backup dos dados
+            System.out.println("\nCriando backup dos dados...");
+            Backup.criarBackup("src/dados", caminhoBackup);
 
-            // Tentativa de exclusão de categoria com tarefas vinculadas
-            System.out.println("\nTentativa de exclusão da categoria 'Trabalho' com tarefas vinculadas...");
-            boolean exclusaoCategoria = arqCategorias.deleteCategoria(c1.getID(), arqTarefas);
-            if (!exclusaoCategoria) {
-                System.out.println("Categoria 'Trabalho' não pôde ser excluída, pois há tarefas vinculadas.");
-            }
+            // Restaurar backup para uma nova pasta
+            System.out.println("\nRestaurando backup dos dados...");
+            Backup.restaurarBackup(caminhoBackup, "src/dados_recuperados");
 
-            // Excluir todas as tarefas da categoria Trabalho
-            System.out.println("\nExcluindo todas as tarefas da categoria 'Trabalho'...");
-            arqTarefas.delete(t1.getID());
-            arqTarefas.delete(t2.getID());
-            arqTarefas.delete(t3.getID());
-
-            // Excluir a categoria após remoção das tarefas
-            System.out.println("\nTentativa de exclusão da categoria 'Trabalho' após excluir todas as tarefas...");
-            exclusaoCategoria = arqCategorias.deleteCategoria(c1.getID(), arqTarefas);
-            if (exclusaoCategoria) {
-                System.out.println("Categoria 'Trabalho' foi excluída com sucesso.");
-            } else {
-                System.out.println("Falha ao excluir a categoria 'Trabalho'.");
-            }
-
-            // Verificar categorias restantes
-            System.out.println("\nCategorias restantes:");
-            arqCategorias.listarCategorias();
-
-            // **Listar todas as tarefas restantes**
-            System.out.println("\nListando todas as tarefas restantes no sistema:");
-            arqTarefas.listarTodasAsTarefas();
+            // Verificar se os dados restaurados estão corretos
+            System.out.println("\nVerificando dados restaurados...");
+            ArquivoTarefas arqTarefasRestaurado = new ArquivoTarefas(Tarefa.class.getConstructor(),  "tarefas_.db");
+            arqTarefasRestaurado.listarTodasAsTarefas();
 
         } catch (Exception e) {
             e.printStackTrace();
