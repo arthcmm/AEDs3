@@ -18,7 +18,7 @@ public class ArquivoTarefas extends Arquivo<Tarefa> {
         super(construtor, nomeArquivo);
 
         // Inicializa a árvore B+ para manter o relacionamento 1:N entre categoria e tarefas
-        arvoreCategoriaTarefa = new BPlusTree<>(4,"ArquivoTarefas.arv");
+        arvoreCategoriaTarefa = new BPlusTree<>(4,super.filePath+"ArquivoTarefas.arv");
         indiceInvertido = new ListaInvertida(4, super.filePath+"indiceInvertido.dic", super.filePath+"indiceInvertido.blk");
         relacaoTarefaRotulo = new ListaInvertida(4, super.filePath+"relTarefaRotulo.dic", super.filePath+"relTarefaRotulo.blk");
         relacaoRotuloTarefa = new ListaInvertida(4, super.filePath+"relRotuloTarefa.dic", super.filePath+"relRotuloTarefa.blk");
