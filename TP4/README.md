@@ -31,9 +31,51 @@ Este projeto implementa um sistema de backup e recuperação de arquivos de dado
 ---
 
 ## **Descrição das Classes e Métodos**
+### Classe `Backup`
+Responsável por criar e restaurar backups de arquivos, utilizando compressão baseada no algoritmo LZW.
 
+- **`criarBackup(String caminhoDados, String caminhoBackup)`**  
+  Cria um backup compactado contendo os arquivos de uma pasta específica.  
+  - **Parâmetros:**
+    - `caminhoDados`: Caminho da pasta que contém os arquivos a serem incluídos no backup.
+    - `caminhoBackup`: Caminho da pasta onde o arquivo de backup será salvo.
+  - **Exceções lançadas:** `IOException` caso ocorram problemas de leitura ou escrita.
+  - **Funcionamento:**
+    - Verifica se a pasta de destino existe e a cria, se necessário.
+    - Compacta os arquivos da pasta `caminhoDados` usando `LZW.compress` e os salva em um arquivo chamado `backup.lzw`.
 
+- **`restaurarBackup(String caminhoBackup, String caminhoRestauracao)`**  
+  Restaura arquivos a partir de um backup compactado.  
+  - **Parâmetros:**
+    - `caminhoBackup`: Caminho da pasta onde está localizado o arquivo de backup.
+    - `caminhoRestauracao`: Caminho da pasta onde os arquivos serão restaurados.
+  - **Exceções lançadas:** `IOException` caso ocorram problemas de leitura ou escrita.
+  - **Funcionamento:**
+    - Verifica se a pasta de restauração existe e a cria, se necessário.
+    - Lê os dados do arquivo `backup.lzw`, descompacta-os usando `LZW.decompress` e recria os arquivos na pasta de destino.
 
+---
+
+### Classe `LZW`
+Implementa o algoritmo de compressão e descompressão **LZW (Lempel-Ziv-Welch)**, utilizado pela classe `Backup`.
+
+- **`compress(byte[] dados)`**  
+  Compacta um array de bytes utilizando o algoritmo LZW.  
+  - **Parâmetros:**
+    - `dados`: Array de bytes a ser compactado.
+  - **Retorno:** Um array de bytes contendo os dados compactados.
+  - **Funcionamento:**
+    - Inicializa um dicionário com os 256 primeiros caracteres ASCII.
+    - Gera códigos para sequências de caracteres repetidas, otimizando o armazenamento.
+
+- **`decompress(byte[] dados)`**  
+  Descompacta um array de bytes utilizando o algoritmo LZW.  
+  - **Parâmetros:**
+    - `dados`: Array de bytes compactados.
+  - **Retorno:** Um array de bytes contendo os dados descompactados.
+  - **Funcionamento:**
+    - Reconstrói o dicionário original e traduz os códigos em sequências de bytes.
+    - Suporta expansão dinâmica do dicionário até o limite de 4096 entradas.
 ---
 
 ## **Relato da Experiência**
@@ -60,7 +102,7 @@ O desenvolvimento deste trabalho foi uma experiência técnica desafiadora e enr
 - **O usuário pode escolher a versão a recuperar?**
   - Sim
 - **Qual foi a taxa de compressão alcançada por esse backup? (Compare o tamanho dos arquivos compactados com os arquivos originais)**
-  - Taxa de compressão média:
+  - Taxa de compressão média: Aproximadamente 30%
 - **O trabalho está funcionando corretamente?**
   - Sim
 - **O trabalho está completo?**
